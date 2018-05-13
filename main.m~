@@ -1,0 +1,88 @@
+%% Read Data
+%       2           4        5          
+% secid,date,exdate,best_bid,best_offer,volume,
+%                                        12
+% impl_volatility,delta,gamma,vega,theta,strike_price,
+%                   15                               20      21
+% newdate,newexdate,date_length,low,high,open,return,cp_flag,close
+spOptionData = csvread("spOptionData179.csv", 1, 0);
+size(spOptionData)
+
+spOptionData(1:10,:)
+
+dividendList = [50, 49.42, 47.13, 45.67]; % 2018, 2017, 2016, 2015
+
+dateLenColIdx = 1;
+bidColIdx = 2;
+askColIdx = 3;
+strikeColIdx = 4;
+cpFlagColIdx = 5;
+closePriceColIdx = 6;
+dividendColIdx = 7;
+annlPayoutReturnColIdx = 8;
+borrowInterestRateColIdx = 9;
+lendInterestRateColIdx = 10;
+interestRateColIdx = 11;
+dateColStartIdx = 12;
+
+%% Calculate d
+
+
+%% Put-call Parity
+
+
+
+
+%% Call only, June 20+, 2015
+dateLen = 179;
+spOptionData_expiration179_idx = find(spOptionData(:,dateLenColIdx) == dateLen & ...
+                                        spOptionData(:,cpFlagColIdx) == 0 & ...
+                                        spOptionData(:,dateColStartIdx+1) == 6 & ...
+                                        spOptionData(:,dateColStartIdx+2) > 20 & ...
+                                        spOptionData(:,dateColStartIdx) == 2015);
+spOptionData_expiration179_idx(1:10)
+
+spOptionData_expiration179 = spOptionData(spOptionData_expiration179_idx,:);
+spOptionData_expiration179(1:10, :)
+spOptionData_expiration179(1:10, 4)
+spOptionData_expiration179(1:10, end)
+spOptionData_expiration179(1:10, interestRateColIdx)
+spOptionData_expiration179(1:10, interestRateColIdx)
+mean(spOptionData_expiration179(:, interestRateColIdx))
+spOptionData_expiration179(1:10, closePriceColIdx)
+spOptionData_expiration179(1:10, annlPayoutReturnColIdx)
+
+interestRate = mean(spOptionData_expiration179(:, interestRateColIdx));
+closePrice = mean(spOptionData_expiration179(:, closePriceColIdx));
+annlPayoutReturn = mean(spOptionData_expiration179(:, annlPayoutReturnColIdx));
+negativeIdxList = [1:4]*(-1);
+
+% CnegaList = interestRate^(-dateLen/365) * ...
+%     (1 - negativeIdxList * (5000 / (closePrice * (annlPayoutReturn/interestRate)^(-dateLen/365))));
+
+CnegaListFunc = @(x) interestRate^(-dateLen/365) * ...
+    (1 - negativeIdxList * (x / (closePrice * (annlPayoutReturn/interestRate)^(-dateLen/365))));
+
+KsampleList = [0:2000] * 5;
+spOptionData_expiration179_C = (spOptionData_expiration179(:, bidColIdx) + ...
+                                spOptionData_expiration179(:, askColIdx)) / 2;
+                            
+% tmp = [spOptionData_expiration179_C, ...
+%     spOptionData_expiration179(:, 5), ...
+%     spOptionData_expiration179(:, 6)];
+% tmp(1:10, :)
+
+spOptionData_expiration179_K = spOptionData_expiration179(:, strikeColIdx);
+
+C179 = spOptionData_expiration179_C;
+K179 = spOptionData_expiration179_K;
+
+%%
+optimalCList = GetOptimalCList(KsampleList, C179, K179, CnegaListFunc);
+
+CListM1 = [CnegaListFunc(mean(KsampleList))(1); optimalCList(1:end-1)];
+CListP1 = [optimalCList(2:end);0];
+PList = (interestRate^(dataLen/365) * (CListM1 - 2*optimalCList + ClistP1)...
+        * closePrice * (annlPayoutReturn/interestRate)^(-dateLen/365))...
+        / mean(KsampleList);
+    
