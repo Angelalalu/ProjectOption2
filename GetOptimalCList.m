@@ -1,14 +1,14 @@
 function [optC_list] = GetOptimalCList(KsampleList, Creal, Kreal, CnegaListFunc)
 %% Debug data
 % KsampleList = [200:205] * 5;
-KsampleList = [0:2000] * 5;
-Creal = C179;
-Kreal = K179;
+% KsampleList = [0:2000] * 5;
+% Creal = C179;
+% Kreal = K179;
 
 %% Initialize
 alpha = 10;
 % 1: 1e-2, 2: 1e-4, 3:10
-CnegaList = CnegaListFunc(mean(KsampleList));
+CnegaList = CnegaListFunc(5);
 
 %% Loop begin
 Cvar = zeros(length(KsampleList), 1);

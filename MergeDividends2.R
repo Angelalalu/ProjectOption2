@@ -3,7 +3,7 @@ library(dplyr)
 
 Sys.setenv(TZ = "US/Eastern")
 
-setwd("/Users/yilongju/Dropbox/Study/2018_Summer/MatlabProject/Options")
+setwd("C:/Users/Sizhu/Documents/03_2018Summer/Option/ProjectOption")
 spOptionDataRaw <- fread("sp500_option_prices_merged.csv")
 
 colnames(spOptionDataRaw) <- c("secid", "startDate", "expireDate", "bidPrice", "askPrice", "volume", "impl_volatility", "delta", "gamma", "vega", "theta", "strikePrice", "startDateIdx", "expireDateIdx", "dateLen", "lowPrice", "highPrice", "openPrice", "return", "cpFlag", "closePrice")
