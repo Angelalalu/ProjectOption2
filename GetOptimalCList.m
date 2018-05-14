@@ -1,4 +1,4 @@
-function [optC_list] = GetOptimalCList(KsampleList, Creal, Kreal, CnegaListFunc)
+function [optC_list, Cvar] = GetOptimalCList(KsampleList, Creal, Kreal, CnegaList, alpha, clampSize)
 %% Debug data
 % KsampleList = [200:205] * 5;
 % KsampleList = [0:2000] * 5;
@@ -6,9 +6,9 @@ function [optC_list] = GetOptimalCList(KsampleList, Creal, Kreal, CnegaListFunc)
 % Kreal = K179;
 
 %% Initialize
-alpha = 10;
+% alpha = 10;
 % 1: 1e-2, 2: 1e-4, 3:10
-CnegaList = CnegaListFunc(5);
+% CnegaList = CnegaListFunc(5);
 
 %% Loop begin
 Cvar = zeros(length(KsampleList), 1);
@@ -25,13 +25,13 @@ for j = 1:length(KsampleList)
     end
 end
 
-OmegaPrimeFunc = @(x) GetOmegaPrime(x, penaltyIdxList, Cvar, alpha, CnegaList);
+OmegaPrimeFunc = @(x) GetOmegaPrime(x, penaltyIdxList, Cvar, alpha, CnegaList, clampSize);
 x0 = zeros(length(KsampleList), 1);
 options = optimoptions(@fminunc,'Display','iter','Algorithm','quasi-newton', ...
     'MaxIterations', 10000, 'MaxFunctionEvaluations', 1e8);
 
-load('result_C179_2015620.mat')
+% load('result_C179_2015620.mat')
 [x,fval,exitflag,output] = fminunc(OmegaPrimeFunc, x0, options);
-% save 'result_C179_2015620_new.mat' x
-optC_list = x;
+optC_list = [CnegaList; x; zeros(clampSize, 1)];
+% save 'result_C179_2015620_new.mat' optC_list
 end

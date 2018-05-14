@@ -2,6 +2,7 @@ library(data.table)
 library(dplyr)
 Sys.setenv(TZ = "US/Eastern")
 setwd("C:/Users/Sizhu/Documents/03_2018Summer/Option/ProjectOption")
+setwd("/Users/yilongju/Dropbox/Study/2018_Summer/MatlabProject/Options/ProjectOption2")
 
 OptionData <- fread("1996_1998options.csv")
 DividendData <- fread("1996_1998dividend.csv")
@@ -56,6 +57,7 @@ AddDividendsListToData <- function(spOptionData, dividendsData) {
 }
 
 OptionDataWDiv <- AddDividendsListToData(OptionMerged, DividendData)
+OptionDataWDiv$cp_flag <- as.integer(OptionDataWDiv$cp_flag)
 head(OptionDataWDiv)
 OptionDataWDiv$dateLen <- OptionDataWDiv$exdate - OptionDataWDiv$date
 OptionDataWDiv$dateLen <- as.integer(OptionDataWDiv$dateLen)
@@ -88,6 +90,7 @@ CalculateBorrowInterestRate <- function(bid, ask, cpFlag, APR, close, t, strike)
 CalculateLendInterestRate <- function(bid, ask, cpFlag, APR, close, t, strike) {
   return(((mean(ask[cpFlag == 1]) + close*APR^(-t/365) - mean(bid[cpFlag == 0]))/strike)^(-365/t))
 }
+
 OptionDataWDiv <- data.frame(OptionDataWDiv %>% 
                                group_by(dateLen, strike_price, startYear, startMonth, startDay) %>% 
                                mutate(
@@ -97,10 +100,21 @@ OptionDataWDiv <- data.frame(OptionDataWDiv %>%
                                  lendInterestRate = CalculateLendInterestRate(
                                    best_bid, best_offer, cp_flag, annlPayoutReturn,
                                    price, dateLen, strike_price)))
-head(OptionDataWDiv)
-OptionDataCheckNAN <- OptionDataWDiv[!complete.cases(OptionDataWDiv),]
-head(OptionDataCheckNAN)
+# head(OptionDataWDiv)
+# OptionDataCheckNAN <- OptionDataWDiv[!complete.cases(OptionDataWDiv),]
+# OptionDataCheckNAN <- data.frame(OptionDataCheckNAN %>% 
+#   group_by(dateLen, strike_price, startYear, startMonth, startDay) %>% 
+#   mutate(
+#     borrowInterestRate = CalculateBorrowInterestRate(
+#       best_bid, best_offer, cp_flag, annlPayoutReturn,
+#       price, dateLen, strike_price)))
+# 
+# dim(OptionDataCheckNAN)
+# length(OptionDataCheckNAN$best_bid[OptionDataCheckNAN$cp_flag == 1])
+# length(OptionDataCheckNAN$best_bid[OptionDataCheckNAN$cp_flag == 0])
+# head(OptionDataCheckNAN %>% arrange(dateLen, strike_price, startYear, startMonth, startDay))
 
+OptionDataWDiv <- OptionDataWDiv[complete.cases(OptionDataWDiv),]
 OptionDataWDiv <- data.frame(OptionDataWDiv %>% 
                                  group_by(dateLen, startYear, startMonth, startDay) %>% 
                                  mutate(borrowInterestRate = median(borrowInterestRate),
@@ -108,9 +122,14 @@ OptionDataWDiv <- data.frame(OptionDataWDiv %>%
 
 
 
-
+head(OptionDataWDiv, 10)
 
 ### Select 1996_179 Options
 OptionDataWDiv1996_179 <- OptionDataWDiv %>% filter(startYear == 1996, startMonth == 6, startDay == 25, dateLen == 179)
 head(OptionDataWDiv1996_179)
+range(OptionDataWDiv1996_179$price)
+
+
+write.csv(OptionDataWDiv1996_179, "OptionDataWDiv1996_179.csv", row.names = F)
+
 

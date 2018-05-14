@@ -1,7 +1,7 @@
-function Cval = GetCValue(x, idx, CnegaList)
+function Cval = GetCValue(x, idx, CnegaList, clampSize)
 
 if idx < 1
-    i = -(idx - 1);
+    i = idx + clampSize;
     Cval = CnegaList(i);
 elseif idx > length(x)
     Cval = 0;
