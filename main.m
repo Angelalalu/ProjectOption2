@@ -99,12 +99,12 @@ K179 = spOptionData_expiration179_K;
 optimalCList = GetOptimalCList(KsampleList, C179, K179, CnegaListFunc);
 save('optimalCList2015_179_May13.mat', 'optimalCList')
 
-CnegaList = CnegaListFunc(mean(KsampleList));
+CnegaList = CnegaListFunc(5);
 CListM1 = [CnegaList(1); optimalCList(1:end-1)];
 CListP1 = [optimalCList(2:end);0];
 PList = (interestRate^(dateLen/365) * (CListM1 - 2*optimalCList + CListP1)...
         * closePrice * (annlPayoutReturn/interestRate)^(-dateLen/365))...
-        / mean(KsampleList);
+        / 25;
 
 % Using First Order Condition
 CVar = zeros(201,1);
