@@ -9,23 +9,24 @@ strike_price_full = [strike_price;strike_price_avg];
 strike_price_full = sort(strike_price_full);
 strike_price_full(1:10)
 
-%% Initialize
+%% Iniitialize
 
 Cvar = zeros(length(strike_price_full), 1);
 IndexList = [1:2:length(strike_price_full)]';
 Cvar(IndexList) = OptionData(:,2);
-alpha = 0.000001;
+alpha = 0.1;
 deltaKj = strike_price_full(2:end) - strike_price_full(1:end-1);
 
 lossFunc = @(x) LossFunction(x, Cvar, IndexList, alpha, deltaKj);
 
-%% Create A, b
+
 A1 = diag(-ones(length(strike_price_full), 1), 0) + ...
     diag(ones(length(strike_price_full) - 1, 1), 1);
 A1 = A1(1:end-1,:);
 b1 = zeros(length(strike_price_full)-1, 1);
 size(A1)
 size(b1)
+
 
 % size([deltaKj; 0; 0])
 % size(-[0;deltaKj] - [deltaKj; 0])
@@ -43,37 +44,51 @@ b = [b1; b2];
 size(A)
 size(b)
 
-%% Solve problem
+
+
+
+
+A2(1:15, 1:20)
+strike_price_full(1:15)'
+
+
 options = optimoptions('fmincon','Display','iter','Algorithm','sqp', ...
-    'MaxFunctionEvaluations', 1e8, 'MaxIterations', 1e6);
-% x0 = zeros(length(strike_price_full), 1);
-xInit = pchip(strike_price_full(IndexList), Cvar(IndexList), strike_price_full);
-% figure()
-% plot(strike_price_full, xInit)
-% hold on
-% scatter(strike_price_full(IndexList), Cvar(IndexList))
+    'MaxFunctionEvaluations', 1e8);
+x0 = zeros(length(strike_price_full), 1);
 [x, fval, exitflag, output] = fmincon(lossFunc, ...
-    xInit, A, b, [], [], [], [], [], options);
+    x0, A, b, [], [], [], [], [], options);
 
 % 
 % P = CalculateDiscreteSecondDerivativeForXandDeltaK(x, deltaKj);
-
+% P = CalculateDerivativesWithXandDeltaK(x, deltaKj, 2);
 % P_b = P;
 % isequal(P, P_b)
 
 % ((x(3:end) - x(2:end-1)) ./ deltaKj(2:end) - ...
 %     (x(2:end-1) - x(1:end-2)) ./ deltaKj(1:end-1)) ./ ...
 %     (0.5*(deltaKj(2:end) + deltaKj(1:end-1)));
-%% Calculate P
-P = CalculateDerivativesWithXandDeltaK(x, deltaKj, 2);
-%% Plots
+
+
+
+
+
 figure()
 subplot(2, 1, 1)
-scatter(strike_price_full, x)
+plot(strike_price_full, x)
 hold on
 stem(strike_price_full(1:2:length(strike_price_full)), ...
     Cvar(1:2:length(strike_price_full)))
 subplot(2, 1, 2)
-plot(strike_price_full(1:end-2), P)
-hold on
-scatter(strike_price_full(1:end-4), CalculateDerivativesWithXandDeltaK(x, deltaKj, 4))
+scatter(strike_price_full(1:end-2), P)
+
+
+
+
+
+
+
+
+
+
+
+
