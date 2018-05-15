@@ -65,6 +65,7 @@ spOptionData_expiration179(1:10, annlPayoutReturnColIdx)
 
 %% Temp read 1996 data
 spOptionData_expiration179 = csvread("OptionDataWDiv1996_179.csv", 1, 0);
+
 dateLenColIdx = 7;
 bidColIdx = 3;
 askColIdx = 4;
@@ -78,6 +79,9 @@ lendInterestRateColIdx = 16;
 interestRateColIdx = 11;
 dateColStartIdx = 8;
 
+spOptionData_expiration179_idx = find(spOptionData_expiration179(:,cpFlagColIdx) == 0);
+spOptionData_expiration179 = spOptionData_expiration179(spOptionData_expiration179_idx, :);
+
 interestRate = mean(spOptionData_expiration179(:, interestRateColIdx));
 closePrice = mean(spOptionData_expiration179(:, closePriceColIdx));
 annlPayoutReturn = mean(spOptionData_expiration179(:, annlPayoutReturnColIdx));
@@ -87,44 +91,69 @@ spOptionData_expiration179_C = (spOptionData_expiration179(:, bidColIdx) + ...
 C179 = spOptionData_expiration179_C / ...
     (closePrice*(annlPayoutReturn/interestRate)^(-dateLen/365));
 K179 = spOptionData_expiration179_K;
-%% Optimization Setting
-clampSize = 4;
+%% Optimization Problem
+%%% Optimization Setting
+clampSize = 50;
 stepSize = 5;
 alpha = 0;
 KsampleList = [0:400] * stepSize;
 KsampleList = KsampleList(clampSize+1:end-clampSize);
-min(KsampleList)
-max(KsampleList)
-length(KsampleList)
 
 negativeIdxList = [1:clampSize]';
 CnegaListFunc = @(x) interestRate^(-dateLen/365) * ...
     (1 - negativeIdxList * (x / (closePrice * ...
     (annlPayoutReturn/interestRate)^(-dateLen/365))));
-CnegaList = CnegaListFunc(5);
-% CnegaList = zeros(clampSize, 1);
+CnegaList = CnegaListFunc(200);
 
-%% Solve Optimization Problem
-[optimalCList, Cvar] = GetOptimalCList(KsampleList, C179, K179, CnegaList, alpha, clampSize);
-save('optimalCList_Clamp50_1996620_alpha0.mat', 'optimalCList')
+%%% Solve Optimization Problem
+[optimalCList, Cvar, x, penaltyIdxList] = GetOptimalCList(KsampleList, C179, K179, CnegaList, alpha, clampSize);
+% save('optimalCList_Clamp50_1996620_alpha0.mat', 'optimalCList')
 
-%% Calculate P from C
+%%% Calculate P from C
 % CListM1 = [CnegaList(1); optimalCList(1:end-1)];
+CListd1 = optimalCList(2:end);
+CListd2 = optimalCList(1:end-1);
+Cd1 = (CListd2 - CListd1) * 1;
+
 CListP1 = optimalCList(3:end);
 CListM1 = optimalCList(2:end-1);
 CListN1 = optimalCList(1:end-2);
+
+CListPP2 = optimalCList(5:end);
+CListPP1 = optimalCList(4:end-1);
+CListMMM = optimalCList(3:end-2);
+CListNN1 = optimalCList(2:end-3);
+CListNN2 = optimalCList(1:end-4);
+Cd4 = CListNN2 - 4*CListNN1 + 6*CListMMM - 4*CListPP1 + CListPP2;
+
+% [C179, K179]
+% [CListP1, CListM1, CListN1, (CListN1 - 2*CListM1 + CListP1)]
+% GetOmegaPrime(x, penaltyIdxList, Cvar, alpha, CnegaList, clampSize)
+
 PList = (interestRate^(dateLen/365) * (CListN1 - 2*CListM1 + CListP1)...
         * closePrice * (annlPayoutReturn/interestRate)^(-dateLen/365))...
         / mean(KsampleList);
 
-figure(3)
-plot(1:length(optimalCList), optimalCList)
+figure()
+subplot(2, 1, 1)
+scatter(1:length(optimalCList), optimalCList)
 hold on
-% plot(1:length(PList), PList)
-
 % stem(-3:length(CnegaList)-4, CnegaList)
-stem(1:length(Cvar), Cvar)
-axis([-5 700 -inf inf])
+stem([1:length(Cvar)-clampSize] + clampSize, Cvar(1:end-clampSize))
+stem([1:clampSize], CnegaList)
+legend("C", "Cim", "Cnega")
+title("alpha = " + num2str(alpha))
+axis([1 length(Cvar) -inf inf])
+
+subplot(2, 1, 2)
+stem(1:length(optimalCList)-1, Cd1)
+hold on
+% scatter(1:length(PList), PList)
+scatter(1:length(PList), CListN1 - 2*CListM1 + CListP1)
+scatter(2:length(PList)-1, Cd4)
+legend("Cd1", "P(Cd2)", "Cd4")
+axis([1 length(Cvar) -inf inf])
+
 %% Using First Order Condition
 CVar = zeros(201,1);
 % diag([3 3 3],0)
