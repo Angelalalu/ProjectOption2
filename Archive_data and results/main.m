@@ -5,25 +5,13 @@
 % impl_volatility,delta,gamma,vega,theta,strike_price,
 %                   15                               20      21
 % newdate,newexdate,date_length,low,high,open,return,cp_flag,close
-spOptionData = csvread("OptionDataWDiv1996_179.csv", 1, 0);
+spOptionData = csvread("spOptionData179.csv", 1, 0);
 size(spOptionData)
 
 spOptionData(1:10,:)
 
 dividendList = [50, 49.42, 47.13, 45.67]; % 2018, 2017, 2016, 2015
 
-% dateLenColIdx = 1;
-% bidColIdx = 2;
-% askColIdx = 3;
-% strikeColIdx = 4;
-% cpFlagColIdx = 5;
-% closePriceColIdx = 6;
-% dividendColIdx = 7;
-% annlPayoutReturnColIdx = 8;
-% borrowInterestRateColIdx = 9;
-% lendInterestRateColIdx = 10;
-% interestRateColIdx = 11;
-% dateColStartIdx = 12;
 dateLenColIdx = 1;
 bidColIdx = 2;
 askColIdx = 3;
@@ -36,6 +24,18 @@ borrowInterestRateColIdx = 9;
 lendInterestRateColIdx = 10;
 interestRateColIdx = 11;
 dateColStartIdx = 12;
+% dateLenColIdx = 1;
+% bidColIdx = 2;
+% askColIdx = 3;
+% strikeColIdx = 4;
+% cpFlagColIdx = 5;
+% closePriceColIdx = 6;
+% dividendColIdx = 7;
+% annlPayoutReturnColIdx = 8;
+% borrowInterestRateColIdx = 9;
+% lendInterestRateColIdx = 10;
+% interestRateColIdx = 11;
+% dateColStartIdx = 12;
 
 %% Calculate d
 
@@ -119,8 +119,8 @@ PList = (interestRate^(dateLen/365) * (CListM1 - 2*optimalCList + CListP1)...
 %% Optimization Setting
 clampSize = 4;
 stepSize = 5;
-alpha = 0;
-KsampleList = [0:400] * stepSize;
+alpha = 0.01;
+KsampleList = [0:1200] * stepSize;
 KsampleList = KsampleList(clampSize+1:end-clampSize);
 min(KsampleList)
 max(KsampleList)
@@ -151,7 +151,6 @@ figure(3)
 plot(1:length(optimalCList), optimalCList)
 hold on
 % plot(1:length(PList), PList)
-
 % stem(-3:length(CnegaList)-4, CnegaList)
 stem(1:length(Cvar), Cvar)
 axis([-5 700 -inf inf])
@@ -204,7 +203,7 @@ CListP1 = [optimalCList(2:end);0];
 PList = (interestRate^(dateLen/365) * (CListM1 - 2*optimalCList + CListP1)...
         * closePrice * (annlPayoutReturn/interestRate)^(-dateLen/365))...
         / mean(KsampleList);
-
+x = optimalCList
 figure(3)
 plot(1:length(x), x)
 hold on
