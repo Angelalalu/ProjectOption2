@@ -1,0 +1,6 @@
+function x2d = CalculateDiscreteSecondDerivativeForXandDeltaK(x, deltaKj)
+
+x2d = ((x(3:end) - x(2:end-1)) ./ deltaKj(2:end) - ...
+    (x(2:end-1) - x(1:end-2)) ./ deltaKj(1:end-1)) ./ ...
+    (0.5*(deltaKj(2:end) + deltaKj(1:end-1)));
+end
