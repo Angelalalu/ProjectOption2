@@ -9,11 +9,15 @@ strike_price_full = [strike_price;strike_price_avg];
 strike_price_full = sort(strike_price_full);
 strike_price_full(1:10)
 
+test_data = (strike_price_full - 3500) .^2;
+test_data(1:10)
+test_data_2ndd = CalculateDerivativesWithXandDeltaK(test_data, deltaKj, 2)
+
 %% Initialize
 
 Cvar = zeros(length(strike_price_full), 1);
 IndexList = [1:2:length(strike_price_full)]';
-Cvar(IndexList) = OptionData(:,2);
+Cvar(IndexList) = test_data([1:2:length(strike_price_full)]');
 alpha = 0.000001;
 deltaKj = strike_price_full(2:end) - strike_price_full(1:end-1);
 
@@ -45,9 +49,10 @@ size(b)
 
 %% Solve problem
 options = optimoptions('fmincon','Display','iter','Algorithm','sqp', ...
-    'MaxFunctionEvaluations', 1e8, 'MaxIterations', 1e6,...
-    'StepTolerance', 1e-12, 'FunctionTolerance', 1e-9);
+    'MaxFunctionEvaluations', 1e8, 'MaxIterations', 1e6, ...
+    'StepTolerance', 1e-12);
 % x0 = zeros(length(strike_price_full), 1);
+% xInit = test_data;
 xInit = pchip(strike_price_full(IndexList), Cvar(IndexList), strike_price_full);
 % figure()
 % plot(strike_price_full, xInit)
@@ -65,20 +70,14 @@ xInit = pchip(strike_price_full(IndexList), Cvar(IndexList), strike_price_full);
 % ((x(3:end) - x(2:end-1)) ./ deltaKj(2:end) - ...
 %     (x(2:end-1) - x(1:end-2)) ./ deltaKj(1:end-1)) ./ ...
 %     (0.5*(deltaKj(2:end) + deltaKj(1:end-1)));
-%% Lowess Function applied on optimalCList
-f = smooth(strike_price_full, x,'lowess');
-xInit2 = f;
-[x2, fval, exitflag, output] = fmincon(lossFunc, ...
-    xInit2, A, b, [], [], [], [], [], options);
-
 %% Calculate P
-P = CalculateDerivativesWithXandDeltaK(x2, deltaKj, 2);
-plot(strike_price_full(1:end-2), P)
+P = CalculateDerivativesWithXandDeltaK(x, deltaKj, 2);
+P2 = CalculateDerivativesWithXandDeltaK(test_data, deltaKj, 2);
 
 %% Plots
 figure()
 subplot(2, 1, 1)
-scatter(strike_price_full, x)
+plot(strike_price_full, x)
 hold on
 stem(strike_price_full(1:2:length(strike_price_full)), ...
     Cvar(1:2:length(strike_price_full)))
