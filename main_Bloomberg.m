@@ -9,25 +9,18 @@ strike_price_full = [strike_price;strike_price_avg];
 strike_price_full = sort(strike_price_full);
 strike_price_full(1:10)
 
-<<<<<<< HEAD
-IndexList = [1:2:length(strike_price_full)]';
-
-max(strike_price)
-min(strike_price)
-
 % strike_price_full = [min(strike_price):2.5:max(strike_price)]';
-% strike_price_full = strike_price;
-IndexList = []
-for i = 1:length(strike_price_full)
-    findIdx = find(strike_price == strike_price_full(i));
-    if ~isempty(findIdx)
-        IndexList = [IndexList; i];
-    end
-end
+% % strike_price_full = strike_price;
+% IndexList = []
+% for i = 1:length(strike_price_full)
+%     findIdx = find(strike_price == strike_price_full(i));
+%     if ~isempty(findIdx)
+%         IndexList = [IndexList; i];
+%     end
+% end
 
 isequal(strike_price_full(IndexList), strike_price)
-=======
->>>>>>> parent of 691cf0b... test interp+lowess
+
 %% Initialize
 
 Cvar = zeros(length(strike_price_full), 1);
@@ -61,12 +54,62 @@ A = [A1; A2];
 b = [b1; b2];
 size(A)
 size(b)
+%% Interpolation and Smooth
+xInit = pchip(strike_price_full(IndexList), Cvar(IndexList), strike_price_full);
+xInit = spline(strike_price_full(IndexList), Cvar(IndexList), strike_price_full);
+xInit_smooth = smooth(strike_price_full, xInit, 'lowess');
+xInit_smooth = malowess(strike_price_full, xInit);
+xInit_smooth = fit([strike_price_full ones(size(strike_price_full, 1), 1)], xInit, 'lowess');
+xInit_smooth = xInit_smooth([strike_price_full ones(size(strike_price_full, 1), 1)]);
 
+x_opt_25 = subsref(matfile('x_opt_25.mat'), struct('type','.','subs','x'));
+xInit_smooth_25 = subsref(matfile('xInit_smooth_25.mat'), struct('type','.','subs','xInit_smooth'));
+
+strike_price_full_25 = [min(strike_price):2.5:max(strike_price)]';
+IndexList_25 = [];
+for i = 1:length(strike_price_full_25)
+    findIdx = find(strike_price_full == strike_price_full_25(i));
+    if ~isempty(findIdx)
+        IndexList_25 = [IndexList_25; i];
+    end
+end
+
+[IndexList_25(1:10), strike_price_full(1:10), strike_price_full_25(IndexList_25(1:10))]
+
+xInit_smooth = x_opt_25(IndexList_25);
+xInit_smooth = xInit_smooth_25(IndexList_25);
+
+figure()
+plot(strike_price_full, xInit)
+hold on
+scatter(strike_price_full, xInit_smooth)
+
+
+
+
+%% Read Stata Result
+lowessStata = csvread("lowess_result_stata.csv", 0, 1);
+xInitStata = lowessStata(:, 2);
+xInit_smoothStata = lowessStata(:, 5);
+xInit_diff = xInitStata - xInit;
+figure()
+plot(xInit_diff)
+
+xInitStata_smoothMatlab = malowess(strike_price_full, xInitStata);
+xInit_smooth_diff = xInitStata_smoothMatlab - xInit_smoothStata;
+
+figure()
+plot(strike_price_full, xInit_smooth_diff)
+hold on
+scatter(strike_price_full, xInitStata_smoothMatlab)
+scatter(strike_price_full, xInit_smoothStata)
+legend("diff", "xInitStata_smoothMatlab", "xInit_smoothStata")
 %% Solve problem
 options = optimoptions('fmincon','Display','iter','Algorithm','sqp', ...
     'MaxFunctionEvaluations', 1e8, 'MaxIterations', 1e6,...
     'StepTolerance', 1e-12, 'FunctionTolerance', 1e-9);
 % x0 = zeros(length(strike_price_full), 1);
+<<<<<<< HEAD
 xInit = pchip(strike_price_full(IndexList), Cvar(IndexList), strike_price_full);
 % figure()
 % plot(strike_price_full, xInit)
@@ -75,6 +118,19 @@ xInit = pchip(strike_price_full(IndexList), Cvar(IndexList), strike_price_full);
 [x, fval, exitflag, output] = fmincon(lossFunc, ...
     xInit, A, b, [], [], [], [], [], options);
 
+=======
+
+
+% stem(strike_price_full(IndexList), Cvar(IndexList))
+% load('x_opt_25.mat')
+% load('xInit_smooth_25.mat')
+
+
+[x, fval, exitflag, output] = fmincon(lossFunc, ...
+    xInit_smooth, A, b, [], [], [], [], [], options);
+% save("xInit_smooth_25.mat", "xInit_smooth")
+% save("x_opt_25.mat", "x")
+>>>>>>> c116f209fccda28adfed279d0d6e26a120ca088d
 % 
 % P = CalculateDiscreteSecondDerivativeForXandDeltaK(x, deltaKj);
 
@@ -91,10 +147,20 @@ xInit2 = f;
     xInit2, A, b, [], [], [], [], [], options);
 
 %% Calculate P
+P = CalculateDerivativesWithXandDeltaK(x, deltaKj, 2);
 P = CalculateDerivativesWithXandDeltaK(x2, deltaKj, 2);
 plot(strike_price_full(1:end-2), P)
 
 %% Plots
+<<<<<<< HEAD
+=======
+% clf
+% x = xInit_smoothStata
+lineWidth = 2;
+legend1 = "optimization result";
+legend2 = "Lowess result";
+
+>>>>>>> c116f209fccda28adfed279d0d6e26a120ca088d
 figure()
 subplot(2, 1, 1)
 scatter(strike_price_full, x)
@@ -105,3 +171,15 @@ subplot(2, 1, 2)
 plot(strike_price_full(1:end-2), P)
 hold on
 scatter(strike_price_full(1:end-4), CalculateDerivativesWithXandDeltaK(x, deltaKj, 4))
+<<<<<<< HEAD
+=======
+hold on
+plot(strike_price_full(1:end-4), CalculateDerivativesWithXandDeltaK(xInit_smooth, deltaKj, 4), 'LineWidth', lineWidth)
+legend("l2-norm", "xInitSmooth")
+
+h = suptitle('Uniform grid of strike prices');
+set(h,'FontSize',20,'FontWeight','normal')
+% plot(strike_price_full(1:end-2), P)
+% hold on
+% scatter(strike_price_full(1:end-4), CalculateDerivativesWithXandDeltaK(x, deltaKj, 4))
+>>>>>>> c116f209fccda28adfed279d0d6e26a120ca088d
