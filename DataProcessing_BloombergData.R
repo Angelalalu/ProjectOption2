@@ -34,3 +34,14 @@ write.csv(OptionData,"spOptions_Bloomberg_SeparateDate.csv", row.names = F)
 # Select 02/06/2018
 OptionData_02062018 <- OptionData %>% filter(st_y == 2018, st_m == 2, st_d == 6)
 write.csv(OptionData_02062018,"spOptions_Bloomberg_02062018.csv", row.names = F)
+head(OptionData_02062018)
+
+# Select 04/17/2018
+OptionData_04172018 <- OptionData %>% filter(st_y == 2018, st_m == 4, st_d == 17)
+write.csv(OptionData_04172018,"spOptions_Bloomberg_04172018.csv", row.names = F)
+head(OptionData_04172018)
+
+# Select 01/25/2018
+OptionData_01252018 <- OptionData %>% filter(st_y == 2018, st_m == 1, st_d == 25)
+write.csv(OptionData_01252018,"spOptions_Bloomberg_01252018.csv", row.names = F)
+head(OptionData_01252018)
