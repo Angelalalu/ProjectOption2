@@ -128,7 +128,7 @@ plot(strike_price_full(1:end-1), CalculateDerivativesWithXandDeltaK(xInit_smooth
 legend(legend1, legend2)
 
 subplot(5, 1, 3)
-scatter(strike_price_full(1:end-2), CalculateDerivativesWithXandDeltaK(x, deltaKj, 2))
+plot(strike_price_full(1:end-2), CalculateDerivativesWithXandDeltaK(x, deltaKj, 2))
 hold on
 plot(strike_price_full(1:end-2), CalculateDerivativesWithXandDeltaK(xInit_smooth, deltaKj, 2), 'LineWidth', lineWidth)
 legend(legend1, legend2)
@@ -145,5 +145,5 @@ hold on
 plot(strike_price_full(1:end-4), CalculateDerivativesWithXandDeltaK(xInit_smooth, deltaKj, 4), 'LineWidth', lineWidth)
 legend(legend1, legend2)
 
-h = suptitle('Uniform grid of strike prices');
+h = suptitle('Optimization vs Lowess');
 set(h,'FontSize',20,'FontWeight','normal')

@@ -41,6 +41,6 @@ hold on
 plot(strike_price_full(1:end-4), CalculateDerivativesWithXandDeltaK(xInit_smooth, deltaKj, 4), 'LineWidth', lineWidth)
 legend(legend1, legend2)
 
-% h = suptitle('Midpoints of Strike Prices');
-% set(h,'FontSize',20,'FontWeight','normal')
+h = suptitle('Uniform grid of strike prices');
+set(h,'FontSize',20,'FontWeight','normal')
 end
