@@ -27,7 +27,7 @@ alpha = 0.000001;
 deltaKj = strike_price_full(2:end) - strike_price_full(1:end-1);
 
 %% Interpolation and Smooth
-strike_price_full_25 = [min(strike_price):2.5:max(strike_price)]';
+strike_price_full_25 = [min(strike_price):5:max(strike_price)]';
 IndexList_25 = [];
 for i = 1:length(strike_price_full_25)
     findIdx = find(strike_price_full == strike_price_full_25(i));
@@ -57,7 +57,8 @@ xInit_smooth_25_Func = fit([strike_price_full_25 ones(size(strike_price_full_25,
 xInit_smooth_25 = xInit_smooth_25_Func([strike_price_full_25 ones(size(strike_price_full_25, 1), 1)]);
 
 deltaKj_25 = strike_price_full_25(2:end) - strike_price_full_25(1:end-1);
-% Plot_x_derivatives(xInit_smooth_25, xInit_smooth_25, deltaKj_25, strike_price_full_25);
+
+Plot_x_derivatives(xInit_smooth_25, xInit_smooth_25, deltaKj_25, strike_price_full_25);
 
 %%% Create A, b for 25
 %
