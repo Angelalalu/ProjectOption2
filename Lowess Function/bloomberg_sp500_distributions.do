@@ -27,8 +27,10 @@ else if "`c(os)'" == "Windows" {
 
 cd $path
 ********************************************************************************
-import excel using Raw/bloomberg_sp500_option_prices.xlsx, firstrow clear
+* import excel using Raw/bloomberg_sp500_option_prices.xlsx, firstrow clear
 
+cd "C:\Users\Sizhu\Documents\03_2018Summer\Option\ProjectOption"
+import excel using spOptions_Bloomberg.xlsx, firstrow clear
 drop F-J
 
 * Mark relevant dates. *
