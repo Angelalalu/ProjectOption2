@@ -27,7 +27,7 @@ alpha = 0.000001;
 deltaKj = strike_price_full(2:end) - strike_price_full(1:end-1);
 
 %% Interpolation and Smooth
-strike_price_full_25 = [min(strike_price):2.5:max(strike_price)]';
+strike_price_full_25 = [min(strike_price):5:max(strike_price)]';
 IndexList_25 = [];
 for i = 1:length(strike_price_full_25)
     findIdx = find(strike_price_full == strike_price_full_25(i));
@@ -54,17 +54,36 @@ xInit_25 = spline(strike_price_full_25(IndexList_25_R), Cvar_25(IndexList_25_R),
 xInit_smooth_25_Func = fit([strike_price_full_25 ones(size(strike_price_full_25, 1), 1)], xInit_25, 'lowess');
 xInit_smooth_25 = xInit_smooth_25_Func([strike_price_full_25 ones(size(strike_price_full_25, 1), 1)]);
 
-%%% Optimization for 25
 deltaKj_25 = strike_price_full_25(2:end) - strike_price_full_25(1:end-1);
+Plot_x_derivatives(xInit_smooth_25, xInit_smooth_25, deltaKj_25, strike_price_full_25);
+%%% Create A, b for 25
 
+A1_25 = diag(-ones(length(strike_price_full_25), 1), 0) + ...
+    diag(ones(length(strike_price_full_25) - 1, 1), 1);
+A1_25 = A1_25(1:end-1,:);
+b1_25 = zeros(length(strike_price_full_25)-1, 1);
+
+A2_25 = diag([deltaKj_25; 0; 0], 0) + ...
+    diag(-[0;deltaKj_25] - [deltaKj_25; 0], 1) + ...
+    diag([0; deltaKj_25(1:end-1)], 2);
+A2_25 = -A2_25(2:end-2,2:end);
+b2_25 = zeros(length(strike_price_full_25)-2, 1);
+
+A_25 = [A1_25; A2_25];
+b_25 = [b1_25; b2_25];
+
+%%% Optimization for 25
 options = optimoptions('fmincon','Display','iter','Algorithm','sqp', ...
     'MaxFunctionEvaluations', 1e8, 'MaxIterations', 1e6,...
     'StepTolerance', 1e-12, 'FunctionTolerance', 1e-9);
 lossFunc_25 = @(x) LossFunction(x, Cvar_25, IndexList_25_R, alpha, deltaKj_25);
-[x, fval, exitflag, output] = fmincon(lossFunc_25, ...
-    xInit_smooth, A, b, [], [], [], [], [], options);
+[x_25, fval, exitflag, output] = fmincon(lossFunc_25, ...
+    xInit_smooth_25, A_25, b_25, [], [], [], [], [], options);
+
+Plot_x_derivatives(x_25, xInit_smooth_25, deltaKj_25, strike_price_full_25);
 
 xInit_smooth = xInit_smooth_25(IndexList_25);
+xInit_smooth = x_25(IndexList_25);
 %% Create A, b
 A1 = diag(-ones(length(strike_price_full), 1), 0) + ...
     diag(ones(length(strike_price_full) - 1, 1), 1);
@@ -89,6 +108,75 @@ lossFunc = @(x) LossFunction(x, Cvar, IndexList, alpha, deltaKj);
 [x, fval, exitflag, output] = fmincon(lossFunc, ...
     xInit_smooth, A, b, [], [], [], [], [], options);
 
+x = [  1.74378080e+03   1.50514836e+03   1.32601179e+03   1.20376034e+03
+   1.13834550e+03   1.13040354e+03   1.12152538e+03   1.10539165e+03
+   1.08030826e+03   1.06419932e+03   1.04421013e+03   1.02033861e+03
+   9.92316467e+02   9.60514544e+02   9.32308336e+02   9.09205683e+02
+   8.91023593e+02   8.70369800e+02   8.47115460e+02   8.21062723e+02
+   7.93668920e+02   7.68066143e+02   7.43274958e+02   7.18388048e+02
+   6.93361352e+02   6.80929508e+02   6.68594282e+02   6.56356325e+02
+   6.44256225e+02   6.32180685e+02   6.20288113e+02   6.08054695e+02
+   5.95590580e+02   5.83240389e+02   5.70826697e+02   5.58074647e+02
+   5.43567227e+02   5.27304364e+02   5.10355679e+02   5.00952167e+02
+   4.99296715e+02   4.97748206e+02   4.95148003e+02   4.91495945e+02
+   4.86829996e+02   4.84367989e+02   4.81886603e+02   4.79406844e+02
+   4.76928715e+02   4.71978465e+02   4.67040676e+02   4.62112866e+02
+   4.57190947e+02   4.52274228e+02   4.47365327e+02   4.42473615e+02
+   4.37599083e+02   4.35150257e+02   4.32693129e+02   4.30227677e+02
+   4.27755235e+02   4.22813846e+02   4.17899442e+02   4.13012904e+02
+   4.08139471e+02   4.03279130e+02   3.98431856e+02   3.93597759e+02
+   3.88754688e+02   3.86325080e+02   3.83888373e+02   3.81444434e+02
+   3.78994020e+02   3.74079581e+02   3.69160246e+02   3.64258618e+02
+   3.59392706e+02   3.54560349e+02   3.49761535e+02   3.44979094e+02
+   3.40185858e+02   3.37782671e+02   3.35375768e+02   3.32965865e+02
+   3.30554249e+02   3.25728712e+02   3.20912151e+02   3.18504975e+02
+   3.16097064e+02   3.13688417e+02   3.11278683e+02   3.08871508e+02
+   3.06469588e+02   3.04072969e+02   3.01680826e+02   2.99291678e+02
+   2.96903053e+02   2.94515690e+02   2.92130175e+02   2.89746604e+02
+   2.87364984e+02   2.84981590e+02   2.82594151e+02   2.80202664e+02
+   2.77819029e+02   2.75445428e+02   2.73081838e+02   2.70722453e+02
+   2.68356539e+02   2.65983686e+02   2.63603893e+02   2.61233447e+02
+   2.58873579e+02   2.56524153e+02   2.54184652e+02   2.51850073e+02
+   2.49509352e+02   2.47162486e+02   2.44809870e+02   2.42452329e+02
+   2.40097828e+02   2.37746549e+02   2.35399836e+02   2.33061029e+02
+   2.30733096e+02   2.28415368e+02   2.26102007e+02   2.23792756e+02
+   2.21487145e+02   2.19183384e+02   2.16881473e+02   2.14581037e+02
+   2.12280994e+02   2.09981344e+02   2.07682084e+02   2.05384163e+02
+   2.03092103e+02   2.00808649e+02   1.98533824e+02   1.96265318e+02
+   1.94002415e+02   1.91744133e+02   1.89487103e+02   1.87231326e+02
+   1.84980025e+02   1.82733161e+02   1.80488852e+02   1.78246580e+02
+   1.76006600e+02   1.73768859e+02   1.71533353e+02   1.69303507e+02
+   1.67085622e+02   1.64879374e+02   1.62675105e+02   1.60472415e+02
+   1.58271385e+02   1.56079879e+02   1.53901662e+02   1.51737173e+02
+   1.49586112e+02   1.47444553e+02   1.45306643e+02   1.43168063e+02
+   1.41028512e+02   1.38889320e+02   1.36752146e+02   1.34622745e+02
+   1.32504930e+02   1.30399185e+02   1.28305510e+02   1.26220754e+02
+   1.24144880e+02   1.22078017e+02   1.20020172e+02   1.17971436e+02
+   1.15931808e+02   1.13901540e+02   1.11881091e+02   1.09872276e+02
+   1.07875095e+02   1.05885770e+02   1.03904362e+02   1.01931665e+02
+   9.99717018e+01   9.80269159e+01   9.60973092e+01   9.41829594e+01
+   9.22832116e+01   9.03908217e+01   8.85059870e+01   8.66293982e+01
+   8.47647890e+01   8.29134282e+01   8.10851660e+01   7.92800307e+01
+   7.74977678e+01   7.57342213e+01   7.39847511e+01   7.22490515e+01
+   7.05224554e+01   6.88038608e+01   6.70932651e+01   6.53917019e+01
+   6.37044235e+01   6.20402557e+01   6.04011902e+01   5.87872040e+01
+   5.71931252e+01   5.56139906e+01   5.40526965e+01   5.25213437e+01
+   5.10202473e+01   4.95468827e+01   4.81008872e+01   4.66822615e+01
+   4.52772780e+01   4.38853432e+01   4.25063227e+01   4.11402873e+01
+   3.97967281e+01   3.84791861e+01   3.71933836e+01   3.59416027e+01
+   3.47239425e+01   3.35404025e+01   3.23897388e+01   3.12655014e+01
+   3.01553238e+01   2.90586200e+01   2.79848809e+01   2.69415535e+01
+   2.59286334e+01   2.49451141e+01   2.39907653e+01   2.30604878e+01
+   2.21548415e+01   2.12745266e+01   2.04231192e+01   1.95996156e+01
+   1.88033796e+01   1.80344157e+01   1.72930547e+01   1.65792244e+01
+   1.58902000e+01   1.52241523e+01   1.45798462e+01   1.33563778e+01
+   1.22194269e+01   1.11689825e+01   1.02024502e+01   8.90531284e+00
+   7.78758935e+00   6.18207067e+00   4.89706668e+00   3.85289421e+00
+   3.05731960e+00   2.50920977e+00   2.03077320e+00   1.53746147e+00
+   1.36574292e+00   1.05887606e+00   8.77994216e-01   7.14135413e-01
+   4.99900184e-01   3.52024195e-01   2.62702569e-01   2.01228808e-01
+   1.85310742e-01];
+
 %% Plots
 % clf
 lineWidth = 2;
@@ -109,7 +197,7 @@ plot(strike_price_full(1:end-1), CalculateDerivativesWithXandDeltaK(xInit_smooth
 legend(legend1, legend2)
 
 subplot(5, 1, 3)
-scatter(strike_price_full(1:end-2), CalculateDerivativesWithXandDeltaK(x, deltaKj, 2))
+plot(strike_price_full(1:end-2), CalculateDerivativesWithXandDeltaK(x, deltaKj, 2))
 hold on
 plot(strike_price_full(1:end-2), CalculateDerivativesWithXandDeltaK(xInit_smooth, deltaKj, 2), 'LineWidth', lineWidth)
 legend(legend1, legend2)
@@ -126,5 +214,5 @@ hold on
 plot(strike_price_full(1:end-4), CalculateDerivativesWithXandDeltaK(xInit_smooth, deltaKj, 4), 'LineWidth', lineWidth)
 legend(legend1, legend2)
 
-h = suptitle('Uniform grid of strike prices');
+h = suptitle('Optimization vs Lowess');
 set(h,'FontSize',20,'FontWeight','normal')
