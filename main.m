@@ -24,3 +24,5 @@ plot(strike_price_full_3(1:end-2), ...
     CalculateDerivativesWithXandDeltaK(x3, deltaKj_3, 2), 'lineWidth', 3)
 legend("01/25/2018","02/06/2018","04/17/2018")
 title("Probability Distribution")
+
+save("xd4l2_xd3linf_result.mat")

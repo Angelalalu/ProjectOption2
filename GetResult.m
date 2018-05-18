@@ -22,7 +22,7 @@ IndexList = [1:2:length(strike_price_full)]'; % Indices of real strike prices
 Cvar = zeros(length(strike_price_full), 1);
 Cvar(IndexList) = OptionData(:,2);
 alpha = 0.000001;
-norm = 2;
+norm = inf;
 deltaKj = strike_price_full(2:end) - strike_price_full(1:end-1);
 
 %% Interpolation and Smooth

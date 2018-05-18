@@ -1,7 +1,7 @@
 function [loss] = LossFunction(x, Cvar, IndexList, alpha, deltaKj, norm)
 loss0 = (sum(CalculateDerivativesWithXandDeltaK(x, deltaKj, 4).^2))^0.5;
 xd = CalculateDerivativesWithXandDeltaK(x, deltaKj, 3);
-if norm == inf:
+if norm == inf
     loss = max(abs(xd));
 else
     loss = (sum(abs(xd) .^ norm))^(1/norm);
