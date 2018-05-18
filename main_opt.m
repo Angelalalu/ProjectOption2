@@ -8,7 +8,7 @@ dayIdx = 5;
 OptionDataIdx = find(OptionDataFull(:,yearIdx) == 2018 & ...
                      OptionDataFull(:,monthIdx) == 1 & ...
                      OptionDataFull(:,dayIdx) == 25);
-                        
+
 OptionData = OptionDataFull(OptionDataIdx, :);
 % OptionData = csvread("spOptions_Bloomberg_02062018.csv", 1, 0);
 
@@ -44,8 +44,10 @@ for i = 1:length(strike_price_full_25)
     end
 end
 
+
 [IndexList_25_R(1:10), strike_price(1:10), strike_price_full_25(IndexList_25_R(1:10))]
-[IndexList_25(1:10), strike_price_full(1:10), strike_price_full_25(IndexList_25(1:10))]
+% [IndexList_25(1:10), strike_price_full(1:10), strike_price_full_25(IndexList_25(1:10))]
+% [IndexList_25, strike_price_full, strike_price_full_25(IndexList_25)]
 
 Cvar_25 = zeros(length(strike_price_full_25), 1);
 Cvar_25(IndexList_25_R) = OptionData(:,2);
@@ -56,32 +58,34 @@ xInit_smooth_25_Func = fit([strike_price_full_25 ones(size(strike_price_full_25,
 xInit_smooth_25 = xInit_smooth_25_Func([strike_price_full_25 ones(size(strike_price_full_25, 1), 1)]);
 
 deltaKj_25 = strike_price_full_25(2:end) - strike_price_full_25(1:end-1);
-Plot_x_derivatives(xInit_smooth_25, xInit_smooth_25, deltaKj_25, strike_price_full_25);
 
+% Plot_x_derivatives(xInit_smooth_25, xInit_smooth_25, deltaKj_25, strike_price_full_25);
 %%% Create A, b for 25
-A1_25 = diag(-ones(length(strike_price_full_25), 1), 0) + ...
-    diag(ones(length(strike_price_full_25) - 1, 1), 1);
-A1_25 = A1_25(1:end-1,:);
-b1_25 = zeros(length(strike_price_full_25)-1, 1);
-
-A2_25 = diag([deltaKj_25; 0; 0], 0) + ...
-    diag(-[0;deltaKj_25] - [deltaKj_25; 0], 1) + ...
-    diag([0; deltaKj_25(1:end-1)], 2);
-A2_25 = -A2_25(2:end-2,2:end);
-b2_25 = zeros(length(strike_price_full_25)-2, 1);
-
-A_25 = [A1_25; A2_25];
-b_25 = [b1_25; b2_25];
-
-%%% Optimization for 25
-options = optimoptions('fmincon','Display','iter','Algorithm','sqp', ...
-    'MaxFunctionEvaluations', 1e8, 'MaxIterations', 1e6,...
-    'StepTolerance', 1e-12, 'FunctionTolerance', 1e-9);
-lossFunc_25 = @(x) LossFunction(x, Cvar_25, IndexList_25_R, alpha, deltaKj_25);
-[x_25, fval, exitflag, output] = fmincon(lossFunc_25, ...
-    xInit_smooth_25, A_25, b_25, [], [], [], [], [], options);
-
-Plot_x_derivatives(x_25, xInit_smooth_25, deltaKj_25, strike_price_full_25);
+%
+% A1_25 = diag(-ones(length(strike_price_full_25), 1), 0) + ...
+%     diag(ones(length(strike_price_full_25) - 1, 1), 1);
+% A1_25 = A1_25(1:end-1,:);
+% b1_25 = zeros(length(strike_price_full_25)-1, 1);
+%
+% A2_25 = diag([deltaKj_25; 0; 0], 0) + ...
+%     diag(-[0;deltaKj_25] - [deltaKj_25; 0], 1) + ...
+%     diag([0; deltaKj_25(1:end-1)], 2);
+% A2_25 = -A2_25(2:end-2,2:end);
+% b2_25 = zeros(length(strike_price_full_25)-2, 1);
+%
+% A_25 = [A1_25; A2_25];
+% b_25 = [b1_25; b2_25];
+%
+% %%% Optimization for 25
+% options = optimoptions('fmincon','Display','iter','Algorithm','sqp', ...
+%     'MaxFunctionEvaluations', 1e8, 'MaxIterations', 1e6,...
+%     'StepTolerance', 1e-12, 'FunctionTolerance', 1e-9);
+% lossFunc_25 = @(x) LossFunction(x, Cvar_25, IndexList_25_R, alpha, deltaKj_25);
+% [x_25, fval, exitflag, output] = fmincon(lossFunc_25, ...
+%     xInit_smooth_25, A_25, b_25, [], [], [], [], [], options);
+%
+% Plot_x_derivatives(x_25, xInit_smooth_25, deltaKj_25, strike_price_full_25);
+% xInit_smooth = x_25(IndexList_25);
 
 xInit_smooth = xInit_smooth_25(IndexList_25);
 % xInit_smooth = x_25(IndexList_25);
