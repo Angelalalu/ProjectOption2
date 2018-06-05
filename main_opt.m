@@ -27,7 +27,7 @@ alpha = 0.000001;
 deltaKj = strike_price_full(2:end) - strike_price_full(1:end-1);
 
 %% Interpolation and Smooth
-strike_price_full_25 = [min(strike_price):5:max(strike_price)]';
+strike_price_full_25 = [min(strike_price):2.5:max(strike_price)]';
 IndexList_25 = [];
 for i = 1:length(strike_price_full_25)
     findIdx = find(strike_price_full == strike_price_full_25(i));
@@ -108,7 +108,7 @@ b = [b1; b2];
 options = optimoptions('fmincon','Display','iter','Algorithm','sqp', ...
     'MaxFunctionEvaluations', 1e8, 'MaxIterations', 1e6,...
     'StepTolerance', 1e-12, 'FunctionTolerance', 1e-9);
-lossFunc = @(x) LossFunction(x, Cvar, IndexList, alpha, deltaKj);
+lossFunc = @(x) LossFunction(x, Cvar, IndexList, alpha, deltaKj, inf);
 
 [x, fval, exitflag, output] = fmincon(lossFunc, ...
     xInit_smooth, A, b, [], [], [], [], [], options);

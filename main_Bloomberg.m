@@ -29,7 +29,7 @@ Cvar(IndexList) = OptionData(:,2);
 alpha = 0.000001;
 deltaKj = strike_price_full(2:end) - strike_price_full(1:end-1);
 
-lossFunc = @(x) LossFunction(x, Cvar, IndexList, alpha, deltaKj);
+lossFunc = @(x) LossFunction(x, Cvar, IndexList, alpha, deltaKj, inf);
 
 %% Create A, b
 A1 = diag(-ones(length(strike_price_full), 1), 0) + ...
