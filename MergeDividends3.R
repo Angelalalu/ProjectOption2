@@ -31,10 +31,13 @@ spOptionDataRaw2013 <- spOptionDataRaw2013 %>% mutate(strike_price = strike_pric
 spOptionDataRaw2013 <- spOptionDataRaw2013 %>% mutate(maturity = as.numeric(exdate - date, units = "days"))
 spOptionDataRaw2013 %>% filter(maturity == 49)
 spOptionDataRaw2013_distinctMaturity <- spOptionDataRaw2013 %>% select(maturity) %>% arrange(maturity) %>% distinct(maturity)
-spOptionDataRaw2013 <- spOptionDataRaw2013 %>% mutate(maturityDiff = abs(maturity - 49))
+spOptionDataRaw2013 <- spOptionDataRaw2013 %>% mutate(maturityDiff = abs(maturity - 30))
 spOptionDataRaw2013 <- data.frame(spOptionDataRaw2013 %>% group_by(date) %>% filter((maturityDiff == min(maturityDiff)) & (!is.na(impl_volatility))))
 
 spOptionDataRaw2013 %>% distinct(date, maturity)
+
+hist(spOptionDataRaw2013$maturity)
+dim(spOptionDataRaw2013)
 
 
 # spOptionDataRaw2013 <- spOptionDataRaw2013 %>% filter((maturity == 30 | maturity == 31) & (!is.na(impl_volatility)))
