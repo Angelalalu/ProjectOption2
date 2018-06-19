@@ -23,7 +23,7 @@ function [dateVec, idx05Vec, idx10Vec, idx25Vec, ...
 % Suppose that we observe, from the market, the following option prices for
 % an underlying asset.
 % filename = "spOptionDataRaw2013_dcast.txt";
-% speDate = "20130102";
+% speDate = "data20130128.txt";
 disp(speDate)
 filename = "tempdata/" + speDate;
 T = readtable(filename);
@@ -60,8 +60,8 @@ T0 = unique(D.T);
 % legend(legText, 'Location', 'eastoutside')
 % hold on
 % % Store the plot colors for future use.
-ax = gca;
-cols = flipud(cat(1, ax.Children.Color));
+% ax = gca;
+% cols = flipud(cat(1, ax.Children.Color));
 % 
 % % Repeat for thefigure(figOpts{:})
 % gscatter(D.K, D.sigmaPut, D.T)
@@ -216,20 +216,20 @@ end % for
 
 %% Plot the functions approximated using this technique.
 pdfK = fineK(3:end);
-for k = 1:size(approxCallPDFs, 2)
-    plot(pdfK, approxCallPDFs(:, k), 'LineWidth', 2, 'Color', cols(k, :))
-    xlabel('Strike (K)')
-    ylabel('Value')
-    title(['T = ', num2str(T0(k))])
-    grid
-end % for
-for k = 1:size(approxPutPDFs, 2)
-    plot(pdfK, approxPutPDFs(:, k), 'LineWidth', 2, 'Color', cols(k, :))
-    xlabel('Strike (K)')
-    ylabel('Value')
-    title(['T = ', num2str(T0(k))])
-    grid
-end % for
+% for k = 1:size(approxCallPDFs, 2)
+%     plot(pdfK, approxCallPDFs(:, k), 'LineWidth', 2, 'Color', cols(k, :))
+%     xlabel('Strike (K)')
+%     ylabel('Value')
+%     title(['T = ', num2str(T0(k))])
+%     grid
+% end % for
+% for k = 1:size(approxPutPDFs, 2)
+%     plot(pdfK, approxPutPDFs(:, k), 'LineWidth', 2, 'Color', cols(k, :))
+%     xlabel('Strike (K)')
+%     ylabel('Value')
+%     title(['T = ', num2str(T0(k))])
+%     grid
+% end % for
 
 %% Fit interpolants to each approximated function.
 pdfFitsCall = cell(1, size(approxCallPDFs, 2));
@@ -274,16 +274,16 @@ for k = 1:numel(pdfFitsCall)
     [diffXXX, idx75] = min(abs(cdfCall{k} - 0.75));
     [diffXXX, idx90] = min(abs(cdfCall{k} - 0.90));
     [diffXXX, idx95] = min(abs(cdfCall{k} - 0.95));
-    idx75Vec = [idx75Vec; idx75];
-    idx90Vec = [idx90Vec; idx90];
-    idx95Vec = [idx95Vec; idx95];
+    idx75Vec = [idx75Vec; fitKCall{k}(idx75)];
+    idx90Vec = [idx90Vec; fitKCall{k}(idx90)];
+    idx95Vec = [idx95Vec; fitKCall{k}(idx95)];
     
-    plot(fitKCall{k}, fitValsCall{k}, 'Color', cols(k, :), 'LineWidth', 2)
+%     plot(fitKCall{k}, fitValsCall{k}, 'Color', cols(k, :), 'LineWidth', 2)
 %     plot(fitKCall{k}, cdfCall{k}, 'Color', cols(k, :), 'LineWidth', 2)
-    xlabel('Strike (K)')
-    ylabel('Density')
-    title(['T = ', num2str(T0(k))])
-    grid
+%     xlabel('Strike (K)')
+%     ylabel('Density')
+%     title(['T = ', num2str(T0(k))])
+%     grid
 end % for
 for k = 1:numel(pdfFitsPut)
     % Evaluate the fit.
@@ -302,17 +302,17 @@ for k = 1:numel(pdfFitsPut)
     [diffXXX, idx10] = min(abs(cdfPut{k} - 0.10));
     [diffXXX, idx25] = min(abs(cdfPut{k} - 0.25));
     [diffXXX, idx50] = min(abs(cdfPut{k} - 0.50));
-    idx05Vec = [idx05Vec; idx05];
-    idx10Vec = [idx10Vec; idx10];
-    idx25Vec = [idx25Vec; idx25];
-    idx50Vec = [idx50Vec; idx50];
+    idx05Vec = [idx05Vec; fitKPut{k}(idx05)];
+    idx10Vec = [idx10Vec; fitKPut{k}(idx10)];
+    idx25Vec = [idx25Vec; fitKPut{k}(idx25)];
+    idx50Vec = [idx50Vec; fitKPut{k}(idx50)];
     
-    plot(fitKPut{k}, fitValsPut{k}, 'Color', cols(k, :), 'LineWidth', 2)
+%     plot(fitKPut{k}, fitValsPut{k}, 'Color', cols(k, :), 'LineWidth', 2)
 %     plot(fitKPut{k}, cdfPut{k}, 'Color', cols(k, :), 'LineWidth', 2)
-    xlabel('Strike (K)')
-    ylabel('Density')
-    title(['T = ', num2str(T0(k))])
-    grid
+%     xlabel('Strike (K)')
+%     ylabel('Density')
+%     title(['T = ', num2str(T0(k))])
+%     grid
 end % for
 
 end
