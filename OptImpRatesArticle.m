@@ -23,7 +23,7 @@ function [dateVec, idx05Vec, idx10Vec, idx25Vec, ...
 % Suppose that we observe, from the market, the following option prices for
 % an underlying asset.
 % filename = "spOptionDataRaw2013_dcast.txt";
-% speDate = "20130102";
+% speDate = "data20130102.txt";
 disp(speDate)
 filename = "tempdata/" + speDate;
 T = readtable(filename);
@@ -48,17 +48,17 @@ figOpts = {'Units', 'Normalized', 'Position', 0.25*[1, 1, 2, 2]};
 % (K, sigma) pairs for each distinct value of T.
 
 % Option call prices.
-% figure(figOpts{:})
-% gscatter(D.K, D.sigmaCall, D.T)
-% xlabel('Strike price, K')
-% ylabel('Implied volatility, \sigma')
-% title('(K, \sigma) pairs for option call prices')
-% grid
+figure(figOpts{:})
+gscatter(D.K, D.sigmaCall, D.T)
+xlabel('Strike price, K')
+ylabel('Implied volatility, \sigma')
+title('(K, \sigma) pairs for option call prices')
+grid
 T0 = unique(D.T);
-% T0Text = num2str(T0);
-% legText = [repmat('T = ', size(T0Text, 1), 1), T0Text];
-% legend(legText, 'Location', 'eastoutside')
-% hold on
+T0Text = num2str(T0);
+legText = [repmat('T = ', size(T0Text, 1), 1), T0Text];
+legend(legText, 'Location', 'eastoutside')
+hold on
 % % Store the plot colors for future use.
 ax = gca;
 cols = flipud(cat(1, ax.Children.Color));

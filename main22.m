@@ -1,22 +1,3 @@
-P = [0.6, 0.1, 0.3;
-    0.1, 0.7, 0.2;
-    0.2, 0.2, 0.6];
-
-A = P - eye(size(P, 1));
-
-[U, D, V] = svd(A');
-U
-D
-V
-
-psi = [0.2759; 0.3448; 0.3793]';
-psi * P
-
-V(:,end)' * P
-Pstat = V(:,end)';
-PstatNor = Pstat / sum(Pstat);
-
-
 % speDateList = ["20130102", "20130103"];
 speDateList = strings(1, length(nameList));
 % speDate = "20130102";
