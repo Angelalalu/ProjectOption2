@@ -40,4 +40,6 @@ resultTable = table(dateVecList, idx05VecList, idx10VecList, ...
 save("resultTable30.mat", "resultTable")
 
 figure()
-plot(resultTable.idx05VecList)
+plot(resultTable.idx05VecList)% figure()
+% plot(resultTable.idx05VecList)
+writetable(resultTable,'sp500_percentiles_matlab.csv','Delimiter',',','QuoteStrings',true)

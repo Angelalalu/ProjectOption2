@@ -23,7 +23,7 @@ function [dateVec, idx05Vec, idx10Vec, idx25Vec, ...
 % Suppose that we observe, from the market, the following option prices for
 % an underlying asset.
 % filename = "spOptionDataRaw2013_dcast.txt";
-% speDate = "data20130102.txt";
+% speDate = "data20130128.txt";
 disp(speDate)
 filename = "tempdata/" + speDate;
 T = readtable(filename);
@@ -35,7 +35,7 @@ D = T;
 %% Compute the implied volatility from the market data.
 % To do this, we use the Financial Toolbox function BLSIMPV to compute the
 % implied volatilities from the available market data. This function uses
-% an iterative approach via comparison with prices from the Black-Scholes 
+% an iterative approach via comparison with prices from the Black-Scholes
 % model.
 % D.sigmaCall = blsimpv(D.S, D.K, D.rf, D.T, D.C, [], [], [], {'call'});
 % D.sigmaPut = blsimpv(D.S, D.K, D.rf, D.T, D.P, [], [], [], {'put'});
@@ -60,9 +60,9 @@ legText = [repmat('T = ', size(T0Text, 1), 1), T0Text];
 legend(legText, 'Location', 'eastoutside')
 hold on
 % % Store the plot colors for future use.
-ax = gca;
-cols = flipud(cat(1, ax.Children.Color));
-% 
+% ax = gca;
+% cols = flipud(cat(1, ax.Children.Color));
+%
 % % Repeat for thefigure(figOpts{:})
 % gscatter(D.K, D.sigmaPut, D.T)
 % xlabel('Strike price, K')
@@ -74,7 +74,7 @@ cols = flipud(cat(1, ax.Children.Color));
 
 
 %% Use interpolation to estimate more sample points.
-% In order to produce a reasonable approximation to the strike price 
+% In order to produce a reasonable approximation to the strike price
 % probability density functions, we need more data points. One approach is
 % to use cubic spline interpolation in (K, sigma) space to produce more
 % sample points. We do this for each distinct expiry time.
@@ -84,7 +84,7 @@ extrapThresh = 0.01;
 fineK = linspace(min(D.K)-extrapThresh, ...
                  max(D.K)+extrapThresh, 500).';
 % Preallocate space for the results.
-sigmaCallInterp = NaN(numel(fineK), numel(T0)); 
+sigmaCallInterp = NaN(numel(fineK), numel(T0));
 sigmaPutInterp = sigmaCallInterp;
 for k = 1:numel(T0)
     % Extract strike/sigma values for each value of T.
@@ -105,7 +105,7 @@ end % for
 %% Use the SABR model to perform the interpolation.
 % The SABR model is often used in situations in which cubic spline
 % interpolation does not give satisfactory results. For more details on the
-% SABR model and the techniques used here, refer to the documentation 
+% SABR model and the techniques used here, refer to the documentation
 % example "Calibrate the SABR Model" and the references therein.
 
 for k = numel(T0):-1:1
@@ -115,7 +115,7 @@ for k = numel(T0):-1:1
     exercise = char(settle + 365*T0(k));
     % Extract the (K, sigma) values for each expiry time.
     tempK = D.K(idx);
-    tempSigmaCall = D.sigmaCall(idx); 
+    tempSigmaCall = D.sigmaCall(idx);
     tempSigmaPut = D.sigmaPut(idx);
     midPt = round(numel(tempK)/2);
     tempForward = tempK(midPt);
@@ -123,7 +123,7 @@ for k = numel(T0):-1:1
     tempPut = tempSigmaPut(midPt);
     % Define an appropriate value for beta, and calibrate the other
     % parameters alpha, rho and nu.
-    beta = 0.2;    
+    beta = 0.2;
     objFunCall = @(X) tempSigmaCall - ...
     blackvolbysabr(X(1), beta, X(2), X(3), char(settle), ...
     exercise, tempForward, tempK);
@@ -158,7 +158,7 @@ end % for
 % title('(K, \sigma) pairs for option call prices, SABR interpolation')
 % grid
 % legend(legText, 'Location', 'eastoutside')
-% 
+%
 % figure(figOpts{:})
 % gscatter(D.K, D.sigmaPut, D.T)
 % hold on
@@ -184,7 +184,7 @@ newP = NaN(size(sigmaPutSABR));
 % Extract scalar asset price and risk-free rate values.
 S = D.S(1);
 rf = D.rf(1);
-for k = 1:numel(T0)    
+for k = 1:numel(T0)
     newC(:, k) = blsprice(S, fineK, rf, T0(k), sigmaCallSABR(:, k));
     newP(:, k) = blsprice(S, fineK, rf, T0(k), sigmaPutSABR(:, k));
 end % for
@@ -210,26 +210,26 @@ approxPutPDFs = NaN(size(Pddash));
 Cddash(Cddash < 0) = 0;
 Pddash(Pddash < 0) = 0;
 for k = 1:size(Cddash, 2)
-    approxCallPDFs(:, k) = exp(rf * T0(k)) * Cddash(:, k);    
+    approxCallPDFs(:, k) = exp(rf * T0(k)) * Cddash(:, k);
     approxPutPDFs(:, k) = exp(rf * T0(k)) * Pddash(:, k);
 end % for
 
 %% Plot the functions approximated using this technique.
 pdfK = fineK(3:end);
-for k = 1:size(approxCallPDFs, 2)
-    plot(pdfK, approxCallPDFs(:, k), 'LineWidth', 2, 'Color', cols(k, :))
-    xlabel('Strike (K)')
-    ylabel('Value')
-    title(['T = ', num2str(T0(k))])
-    grid
-end % for
-for k = 1:size(approxPutPDFs, 2)
-    plot(pdfK, approxPutPDFs(:, k), 'LineWidth', 2, 'Color', cols(k, :))
-    xlabel('Strike (K)')
-    ylabel('Value')
-    title(['T = ', num2str(T0(k))])
-    grid
-end % for
+% for k = 1:size(approxCallPDFs, 2)
+%     plot(pdfK, approxCallPDFs(:, k), 'LineWidth', 2, 'Color', cols(k, :))
+%     xlabel('Strike (K)')
+%     ylabel('Value')
+%     title(['T = ', num2str(T0(k))])
+%     grid
+% end % for
+% for k = 1:size(approxPutPDFs, 2)
+%     plot(pdfK, approxPutPDFs(:, k), 'LineWidth', 2, 'Color', cols(k, :))
+%     xlabel('Strike (K)')
+%     ylabel('Value')
+%     title(['T = ', num2str(T0(k))])
+%     grid
+% end % for
 
 %% Fit interpolants to each approximated function.
 pdfFitsCall = cell(1, size(approxCallPDFs, 2));
@@ -270,20 +270,20 @@ for k = 1:numel(pdfFitsCall)
     fitValsCall{k} = fitValsCall{k}/A;
     cdfCall{k} = cumsum(fitValsCall{k});
     cdfCall{k} = cdfCall{k} / cdfCall{k}(end);
-    
+
     [diffXXX, idx75] = min(abs(cdfCall{k} - 0.75));
     [diffXXX, idx90] = min(abs(cdfCall{k} - 0.90));
     [diffXXX, idx95] = min(abs(cdfCall{k} - 0.95));
-    idx75Vec = [idx75Vec; idx75];
-    idx90Vec = [idx90Vec; idx90];
-    idx95Vec = [idx95Vec; idx95];
-    
-    plot(fitKCall{k}, fitValsCall{k}, 'Color', cols(k, :), 'LineWidth', 2)
+    idx75Vec = [idx75Vec; fitKCall{k}(idx75)];
+    idx90Vec = [idx90Vec; fitKCall{k}(idx90)];
+    idx95Vec = [idx95Vec; fitKCall{k}(idx95)];
+
+%     plot(fitKCall{k}, fitValsCall{k}, 'Color', cols(k, :), 'LineWidth', 2)
 %     plot(fitKCall{k}, cdfCall{k}, 'Color', cols(k, :), 'LineWidth', 2)
-    xlabel('Strike (K)')
-    ylabel('Density')
-    title(['T = ', num2str(T0(k))])
-    grid
+%     xlabel('Strike (K)')
+%     ylabel('Density')
+%     title(['T = ', num2str(T0(k))])
+%     grid
 end % for
 for k = 1:numel(pdfFitsPut)
     % Evaluate the fit.
@@ -297,22 +297,22 @@ for k = 1:numel(pdfFitsPut)
     fitValsPut{k} = fitValsPut{k}/A;
     cdfPut{k} = cumsum(fitValsPut{k});
     cdfPut{k} = cdfPut{k} / cdfPut{k}(end);
-    
+
     [diffXXX, idx05] = min(abs(cdfPut{k} - 0.05));
     [diffXXX, idx10] = min(abs(cdfPut{k} - 0.10));
     [diffXXX, idx25] = min(abs(cdfPut{k} - 0.25));
     [diffXXX, idx50] = min(abs(cdfPut{k} - 0.50));
-    idx05Vec = [idx05Vec; idx05];
-    idx10Vec = [idx10Vec; idx10];
-    idx25Vec = [idx25Vec; idx25];
-    idx50Vec = [idx50Vec; idx50];
-    
-    plot(fitKPut{k}, fitValsPut{k}, 'Color', cols(k, :), 'LineWidth', 2)
+    idx05Vec = [idx05Vec; fitKPut{k}(idx05)];
+    idx10Vec = [idx10Vec; fitKPut{k}(idx10)];
+    idx25Vec = [idx25Vec; fitKPut{k}(idx25)];
+    idx50Vec = [idx50Vec; fitKPut{k}(idx50)];
+
+%     plot(fitKPut{k}, fitValsPut{k}, 'Color', cols(k, :), 'LineWidth', 2)
 %     plot(fitKPut{k}, cdfPut{k}, 'Color', cols(k, :), 'LineWidth', 2)
-    xlabel('Strike (K)')
-    ylabel('Density')
-    title(['T = ', num2str(T0(k))])
-    grid
+%     xlabel('Strike (K)')
+%     ylabel('Density')
+%     title(['T = ', num2str(T0(k))])
+%     grid
 end % for
 
 end
